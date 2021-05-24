@@ -14,11 +14,9 @@ from Bio import SeqIO
 from Bio import AlignIO
 from Bio.SeqRecord import SeqRecord
 import time
-from DateTimeUtils import date2FloatYear
 import subprocess
 import sys
 import re
-import Alignment
 
 
 def get_geographic_locs(df,column_name,mapToRegion=False):
@@ -159,61 +157,60 @@ def subsample_align(sampled_taxa,aln_file,new_aln_file):
     Set up directories and files
 """
 
-"Set directories"
-base_dir = Path(__file__).parent / "covid-analysis"
-tree_dir = base_dir / "phylogenies" / 'GISAID-hCoV-19-phylogeny-2021-03-08'
-align_dir = Path.home() / 'Desktop' / 'msa_0314'
-
 "GISAID input files"
-#tree_file = str(tree_dir / "hcov_march2021_USA_post2020-09-01.tree")
+# base_dir = Path(__file__).home() / 'Documents' / 'GitHub' / 'phyloTF2' / "covid-analysis"
+# tree_dir = base_dir / "phylogenies" / 'GISAID-hCoV-19-phylogeny-2021-03-08'
+# align_dir = Path.home() / 'Desktop' / 'msa_0314'
+# tree_file = str(tree_dir / "hcov_march2021_USA_post2020-09-01.tree")
 
 "Subsample full sequence data to get smaller EMSI data set"
-meta_file = str(tree_dir / 'hcov_USA_post2020-09-01_EMSI_metadata.csv')
-aln_fasta_file = str(align_dir / "hcov_march2021_USA_post2020-09-01_aligned.fasta")
-sub_meta_file = str(tree_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_metadata.csv")
-sub_aln_file = str(align_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_aligned.fasta")
-meta_df = pd.read_csv(meta_file,sep=",",index_col='accession_id')
-sample_count = 2000
-sub_df = meta_df.sample(n=sample_count, axis=0)
-sub_df.to_csv(sub_meta_file,index=False)
-sampled_taxa = sub_df.index.tolist()
-subsample_align(sampled_taxa,aln_fasta_file,sub_aln_file)
-
-# "Subsampled data set file names"
-# meta_file = str(tree_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_metadata.csv")
-# aln_fasta_file = str(align_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_aligned.fasta")
-
-# """
-#     Create new sub_sampled data set
-# """
-
-# "Get metadata for GISAID global tree"
+# meta_file = str(tree_dir / 'hcov_USA_post2020-09-01_EMSI_metadata.csv')
+# aln_fasta_file = str(align_dir / "hcov_march2021_USA_post2020-09-01_aligned.fasta")
+# sub_meta_file = str(tree_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_metadata.csv")
+# sub_aln_file = str(align_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_aligned.fasta")
 # meta_df = pd.read_csv(meta_file,sep=",",index_col='accession_id')
-
-# "Encode deletion as binary variable in meta data"
-# del_label = 'nsp6_Delta9'
-# meta_df = get_del_state(meta_df,aln_fasta_file,del_label)
-
-# "Split df in presence/absence of deletion"
-# sub_df = meta_df[meta_df['nsp6_Delta9'] == 0]
-# del_sub_df = meta_df[meta_df['nsp6_Delta9'] == 1]
-
-# "Subsample seqs without deletion"
-# sample_count = len(del_sub_df.index)
-# sub_df = sub_df.sample(n=sample_count, axis=0)
-
-# "Merge back into one dataframe"
-# sub_df = sub_df.append(del_sub_df)
-
-# "Get subsampled alignment for samples in sub_df"
+# sample_count = 2000
+# sub_df = meta_df.sample(n=sample_count, axis=0)
+# sub_df.to_csv(sub_meta_file,index=True)
 # sampled_taxa = sub_df.index.tolist()
-# new_aln_file = str(align_dir / "hcov_USA_post2020-09-01_EMSI_nsp6_Delta9_subsampled_aligned.fasta") 
-# subsample_align(sampled_taxa,aln_fasta_file,new_aln_file)
+# subsample_align(sampled_taxa,aln_fasta_file,sub_aln_file)
 
-# "Rename records in fasta file by accession id to match taxa labels in tree"
-# records = SeqIO.parse(new_aln_file, "fasta")
-# records = rename_seqs(sub_df,records) # reanme by accession id
-# SeqIO.write(records,new_aln_file, "fasta")
+"Subsampled data set file names"
+base_dir = Path(__file__).parent.parent / "data"
+meta_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_metadata.csv")
+aln_fasta_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_aligned.fasta")
+
+"""
+    Create new sub_sampled data set
+"""
+
+"Get metadata for GISAID global tree"
+meta_df = pd.read_csv(meta_file,sep=",",index_col='accession_id')
+
+"Encode deletion as binary variable in meta data"
+del_label = 'nsp6_Delta9'
+meta_df = get_del_state(meta_df,aln_fasta_file,del_label)
+
+"Split df in presence/absence of deletion"
+sub_df = meta_df[meta_df[del_label] == 0]
+del_sub_df = meta_df[meta_df[del_label] == 1]
+
+"Subsample seqs without deletion"
+sample_count = len(del_sub_df.index)
+sub_df = sub_df.sample(n=sample_count, axis=0)
+
+"Merge back into one dataframe"
+sub_df = sub_df.append(del_sub_df)
+
+"Get subsampled alignment for samples in sub_df"
+sampled_taxa = sub_df.index.tolist()
+new_aln_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_nsp6_Delta9_subsampled_aligned.fasta") 
+subsample_align(sampled_taxa,aln_fasta_file,new_aln_file)
+
+"Rename records in fasta file by accession id to match taxa labels in tree"
+records = SeqIO.parse(new_aln_file, "fasta")
+records = rename_seqs(sub_df,records) # reanme by accession id
+SeqIO.write(records,new_aln_file, "fasta")
 
 "Extract tree of desired samples using dendropy"
 # filtered_taxa = set(filtered_taxa) # index is 'accession_id'

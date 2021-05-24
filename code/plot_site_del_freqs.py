@@ -51,16 +51,13 @@ def add_feature(ax, label, start, end, offset_cntr):
 """
 
 "Set directories"
-base_dir = Path(__file__).parent / "covid-analysis"
-tree_dir = base_dir / "phylogenies" / 'GISAID-hCoV-19-phylogeny-2021-03-08'
-align_dir = Path.home() / 'Desktop' / 'msa_0314'
+base_dir = Path(__file__).parent.parent / "data"
 
 "Subsampled data set file names"
-#aln_fasta_file = str(align_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_aligned.fasta")
-aln_fasta_file = str(align_dir / "hcov_march2021_USA_post2020-09-01_aligned.fasta")
+aln_fasta_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_aligned.fasta")
 
-
-feature_df = pd.read_csv('hcov_genomic_features.csv',sep=",",index_col='Feature')
+feature_file = base_dir / 'hcov_genomic_features.csv'
+feature_df = pd.read_csv(feature_file,sep=",",index_col='Feature')
 
 "Count deletions at each site"
 align = AlignIO.read(aln_fasta_file, "fasta")
