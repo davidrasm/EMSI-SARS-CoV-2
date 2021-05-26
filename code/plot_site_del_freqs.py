@@ -70,6 +70,12 @@ for i in range(n_sites):
 site_del_freq = np.array(deletions) / n_samples 
 site_del_freq[:200] = np.nan # ignore first 200 sites
 site_del_freq[-200:] = np.nan # ignore last 200 sites
+site_del_df = pd.DataFrame({'DeletionFreq':site_del_freq})
+site_del_df.to_csv('hcov_site_del_freqs.csv',index=False)
+
+"Or load in site del freqs if we already have them"
+##site_del_df = pd.read_csv('hcov_site_del_freqs.csv')
+#site_del_freq = site_del_df['DeletionFreq'].values
 
 "Plot deletion freqs across genome"
 sns.set(style="darkgrid")
@@ -83,6 +89,8 @@ for feature, row in feature_df.iterrows():
     add_feature(ax,feature, row['StartPosition'], row['EndPosition'],cntr) # add genomic feature annotation
     cntr += 1
     if cntr > 3: cntr = 0
+#ax.set_xlim([25000, 29000])
+
 fig.set_size_inches(10, 6)
 fig.tight_layout()
 plt.show()

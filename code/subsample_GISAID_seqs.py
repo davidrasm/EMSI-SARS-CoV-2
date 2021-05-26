@@ -103,13 +103,13 @@ def write_tip_dates(tip_date_dict,date_file):
         txt.write(k + '\t' + str(v) + '\n')
     txt.close()
     
-def rename_seqs(df,records):
+def rename_seqs(df,records,del_label):
     
     "Iterate through list of records, renaming each as we go"
     new_records = []
     for rec in records:
         date = df.loc[rec.name]['collection_date']
-        del_state = df.loc[rec.name]['nsp6_Delta9']
+        del_state = df.loc[rec.name][del_label]
         if del_state:
             del_state = 'Present'
         else:
@@ -120,15 +120,33 @@ def rename_seqs(df,records):
 
     return new_records
 
-def get_del_state(df,align_file,column_name):
+def get_nsp6_del_state(df,align_file,column_name):
     
-    "This is specifically hardcoded the ORF6 del9 deletion"
+    "This is specifically hardcoded the nsp6 del9 deletion"
     seq_dict = SeqIO.to_dict(SeqIO.parse(align_file, "fasta"))
     deletions = []
     for index, row in df.iterrows():
         rec = seq_dict.get(index)
         seq_str = str(rec.seq[11287:11296]) # genomic start pos is shifted -1 for zero-based indexing
         del_str = '-'*9
+        if seq_str == del_str:
+            deletions.append(1)
+        else:
+            deletions.append(0)
+            
+    df[column_name] = deletions
+    
+    return df
+
+def get_ORF9_del_state(df,align_file,column_name):
+    
+    "This is specifically hardcoded the ORF9 TRS -3 deletion"
+    seq_dict = SeqIO.to_dict(SeqIO.parse(align_file, "fasta"))
+    deletions = []
+    for index, row in df.iterrows():
+        rec = seq_dict.get(index)
+        seq_str = str(rec.seq[28270]) # genomic start pos is shifted -1 for zero-based indexing
+        del_str = '-'
         if seq_str == del_str:
             deletions.append(1)
         else:
@@ -187,9 +205,13 @@ aln_fasta_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_aligned
 "Get metadata for GISAID global tree"
 meta_df = pd.read_csv(meta_file,sep=",",index_col='accession_id')
 
-"Encode deletion as binary variable in meta data"
-del_label = 'nsp6_Delta9'
-meta_df = get_del_state(meta_df,aln_fasta_file,del_label)
+"Encode nsp6 deletion as binary variable in meta data"
+#del_label = 'nsp6_Delta9'
+#meta_df = get_nsp6_del_state(meta_df,aln_fasta_file,del_label)
+
+"Encode ORF9 TRS deletion as binary variable in meta data"
+del_label = 'ORF9_TRS-3'
+meta_df = get_ORF9_del_state(meta_df,aln_fasta_file,del_label)
 
 "Split df in presence/absence of deletion"
 sub_df = meta_df[meta_df[del_label] == 0]
@@ -204,12 +226,13 @@ sub_df = sub_df.append(del_sub_df)
 
 "Get subsampled alignment for samples in sub_df"
 sampled_taxa = sub_df.index.tolist()
-new_aln_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_nsp6_Delta9_subsampled_aligned.fasta") 
+#new_aln_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_nsp6_Delta9_subsampled_aligned.fasta") 
+new_aln_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_ORF9_TRS-3_subsampled_aligned.fasta") 
 subsample_align(sampled_taxa,aln_fasta_file,new_aln_file)
 
 "Rename records in fasta file by accession id to match taxa labels in tree"
 records = SeqIO.parse(new_aln_file, "fasta")
-records = rename_seqs(sub_df,records) # reanme by accession id
+records = rename_seqs(sub_df,records,del_label) # reanme by accession id
 SeqIO.write(records,new_aln_file, "fasta")
 
 "Extract tree of desired samples using dendropy"
