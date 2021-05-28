@@ -312,7 +312,7 @@ base_dir = Path(__file__).parent.parent / "data"
 meta_file = base_dir / "hcov_USA_post2020-09-01_EMSI_subsampled_metadata.csv"
 tree_file = str(tree_dir / "hcov_march2021_USA_post2020-09-01_dated.tre")
 subtree_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_mini.tre")
-labeled_tree_file = str(tree_dir / "hcov_USA_post2020-09-01_EMSI_mini_labeled.tre") # tree with internal labels
+labeled_tree_file = str(base_dir / "hcov_USA_post2020-09-01_EMSI_mini_labeled.tre") # tree with internal labels
 
 align_file = base_dir / 'hcov_USA_post2020-09-01_EMSI_subsampled_aligned.fasta'
 unencoded_csv = base_dir / "hcov_USA_post2020-09-01_unencodedAncStates_dels+pangoline.csv"
