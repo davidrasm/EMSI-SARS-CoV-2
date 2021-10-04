@@ -4,7 +4,7 @@ Created on Sat Jun 13 15:31:32 2020
 @author: david
 """
 
-from pastml.acr import pastml_pipeline
+#from pastml.acr import pastml_pipeline
 from Bio import SeqIO
 from ete3 import Tree
 import pandas as pd
@@ -23,6 +23,9 @@ def fasta2csv(fasta_file,csv_file):
     
     return traits
 
+"""
+    Max likelihood reconstruction using PastML
+"""
 def reconstruct(tree_file,align_file,csv_file="temp-align.csv"):
     
     if align_file.endswith('.fasta'):
@@ -46,7 +49,7 @@ def reconstruct(tree_file,align_file,csv_file="temp-align.csv"):
     # (Optional) path to the output tree visualisation
     html = "tree-000_tree.html"
     
-    pastml_pipeline(data=data, data_sep=',', columns=columns, tree=tree, verbose=True)
+    #pastml_pipeline(data=data, data_sep=',', columns=columns, tree=tree, verbose=True)
     
     #pastml_pipeline(data=data, data_sep=',', columns=columns, name_column=traits[0], tree=tree,
     #                html_compressed=html_compressed, html=html, verbose=True)
